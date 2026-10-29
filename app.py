@@ -38,3 +38,37 @@ def predict(review: Review):
     text_features = tfidf.transform([processed_text])
     prediction = model.predict(text_features)[0]
     return {"prediction": int(prediction)}
+from fastapi.responses import HTMLResponse
+
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return """
+    <html>
+    <head>
+        <title>IMDb Sentiment Predictor</title>
+    </head>
+    <body>
+        <h1>IMDb Sentiment Predictor</h1>
+        <textarea id="review" rows="6" cols="50" placeholder="Enter a movie review"></textarea>
+        <br><br>
+        <button onclick="predict()">Predict</button>
+        <h2 id="result"></h2>
+
+        <script>
+        async function predict() {
+            const text = document.getElementById("review").value;
+
+            const response = await fetch("/predict", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({text: text})
+            });
+
+            const data = await response.json();
+            document.getElementById("result").innerText =
+                data.prediction === 1 ? "Positive" : "Negative";
+        }
+        </script>
+    </body>
+    </html>
+    """
